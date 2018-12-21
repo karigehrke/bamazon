@@ -23,6 +23,7 @@ connection.connect(function(err) {
     showProducts();
 });
 
+
 // Working: Add table format.
 function showProducts() {
     connection.query("SELECT * FROM products", function(err, res) {
@@ -36,6 +37,8 @@ function showProducts() {
             t.cell('Price', products.price)
             t.cell('Stock', products.stock_quantity)
             t.newRow();
+
+
         })
         console.log(t.toString());
         // console.log(res);
@@ -54,14 +57,19 @@ function start() {
     //validate the id number 
     .then(function(answer) {
         console.log(answer.action);
-        // var query = "SELECT id FROM products WHERE ?"
-        // connection.query(query, { id: answer.action}, function(err, res) {   
-        // })
-        runPurchase();
+        if (answer.action > 10) {
+            console.log('This ID is invalid. Please enter a valid ID.')
+        } else {
+            var query = "SELECT id FROM products WHERE ?" 
+            connection.query(query, {id: answer.action}, function(err, res) {   
+            })
+            runPurchase(); //runPurchase(product);
+        }
+        
     })
 }
 
-function runPurchase() {
+function runPurchase() { //function runPurchase(product) {
 inquirer.prompt([
     {
         name: "amount",
@@ -75,16 +83,28 @@ inquirer.prompt([
         }
     }
 ])
+//subtract amounts in the query SET amount/reset database
 .then(function(answer) {
-    console.log(answer.amount)
+    console.log(answer.amount);
+    console.log(answer.product);
+
+    if (answer.amount > 0) {
+        var query = "SELECT id, price, stock_quantity FROM products WHERE ?";
+        connection.query(query, { id: answer.id, price: answer.price, stock_quantity: answer.stock_quantity}, function(err, res) { //answer.amount}) //{id: product.id} 
+            var total = answer.amount * answer.price;
+            console.log('Your total is: ' + total);    
+        }) 
+        
+    if (answer.amount < answer.stock_quantity) {
+        console.log("There is not enough in stock to fulfill your order.")
+    }
+    }
+    
     connection.end();
-    // if (stock_quantity > 0) {
-    // var query = "SELECT stock_quantity FROM products WHERE ?";
-    // connection.query(query - answer.amount)
-    // } else 
-    // console.log("There is not enough in stock to fulfill your order.")
 })
 }
+// })
+// }
 
 //after purchase has been made
 // connection.query()
